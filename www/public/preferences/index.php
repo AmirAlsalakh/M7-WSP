@@ -27,5 +27,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <label for="pwd">Lösenord</label>
     <input id="pwd" type="password" name='password' required />
 
-    <input type="submit" value="Logga in" />
+    <input type="submit" value="Radera Konto" />
 </form>

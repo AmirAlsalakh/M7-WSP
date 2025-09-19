@@ -1,14 +1,25 @@
 <?php
-include $_SERVER['DOCUMENT_ROOT'] . '/../metod/signUpMetod.php';
+include $_SERVER['DOCUMENT_ROOT'] . '/../model/dbFunctions.php';
 
 if (!empty($_POST)) {
-    $fname = $_POST['firstName'] ?? "";
-    $lname = $_POST['surName'] ?? "";
-    $uname = $_POST['userName'] ?? "";
-    $password = $_POST['password'] ?? "";
+    if (isset($_POST['firstName']) && isset($_POST['surName']) && isset($_POST['userName']) && isset($_POST['password'])) {
+        $db = connectToDb();
 
-    $user = new User($fname, $lname, $uname, $password);
-    $user->save();
+        $firstName = filter_input(INPUT_POST, 'firstName', FILTER_SANITIZE_SPECIAL_CHARS);
+        $surName = filter_input(INPUT_POST, 'surName', FILTER_SANITIZE_SPECIAL_CHARS);
+        $userName = filter_input(INPUT_POST, 'userName', FILTER_SANITIZE_SPECIAL_CHARS);
+        $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+
+        $result = signUp($db, $firstName, $surName, $userName, $password);
+
+        if ($result) {
+            header('Location: index.php?type=signUp');
+        } else {
+            header('Content-Type: text/html; charset=utf-8');
+            echo "<p>Kunde inte lägga till användaren. Kontrollera användarnamnet</p>";
+            echo "<a href = 'index.php?type=signUp'>Försök igen</a>";
+        }
+    }
 }
 ?>
 

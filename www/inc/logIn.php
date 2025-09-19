@@ -1,17 +1,25 @@
 <?php
-include $_SERVER['DOCUMENT_ROOT'] . '/../metod/logInMetod.php';
+include $_SERVER['DOCUMENT_ROOT'] . '/../model/dbFunctions.php';
 
 if (!empty($_POST)) {
-    $username = $_POST['userName'] ?? "";
-    $password = $_POST['password'] ?? "";
+    if (isset($_POST['password'], $_POST['userName'])) {
+        $db = connectToDb();
 
-    $auth = new UserAuth();
-    $user = $auth->login($username, $password);
+        $userName = filter_input(INPUT_POST, 'userName', FILTER_UNSAFE_RAW);
+        $password = $_POST['password'];
 
-    if ($user) {
-        header("Location: index.php");
-    } else {
-        header("Location: index.php?type=login");
+        $response = logIn($db, $userName, $password);
+
+        if ($response) {
+            session_regenerate_id(true);
+
+            $_SESSION['uid'] = $response['uid'];
+            $_SESSION['username'] = $response['username'];
+            $_SESSION['name'] = $response['name'];
+            header("Location: index.php");
+        } else {
+            header("Location: index.php?type=login");
+        }
     }
 }
 ?>

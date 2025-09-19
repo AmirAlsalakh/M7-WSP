@@ -26,29 +26,28 @@ function logIn($db, $userName, $password)
 
     $stmt->execute();
 
+    $response = [];
     if ($stmt->rowCount() == 1) {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (password_verify($password, $user['password'])) {
-            session_regenerate_id(true);
-            $_SESSION['uid'] = true;
+            $respons['uid'] = $user['uid'];
+            $respons['username'] = $user['username'];
 
-            $_SESSION['uid'] = $user['uid'];
-            $_SESSION['username'] = $user['username'];
+            $respons['name'] = $user['firstname'] . " " . $user['surname'];
 
-            $_SESSION['name'] = $user['firstname'] . " " . $user['surname'];
-
-            return true;
+            return $response;
         } else {
-            return false;
+            return $response;
         }
     } else {
-        return false;
+        return $response;
     }
 }
 
 function signUp($db, $firstName, $surName, $userName, $password)
 {
+    $result = true;
     $sqlkod = "INSERT INTO user(uid, firstname, surname, username, password) VALUES(UUID(), :fn, :sn,:user,:pwd)";
 
     $stmt = $db->prepare($sqlkod);
@@ -60,9 +59,10 @@ function signUp($db, $firstName, $surName, $userName, $password)
 
     try {
         $stmt->execute();
-        return true;
+        return $result;
     } catch (Exception $e) {
-        return false;
+        $result = !$result;
+        return $result;
     }
 }
 
@@ -72,7 +72,7 @@ function searchFriend($db, $userName)
 
     $stmt = $db->prepare($sqlkod);
     $stmt->bindValue(':username', $userName . "%");
-    $stmt->bindValue(':uid', $_SESSION['uid'] . "%");
+    $stmt->bindValue(':uid', $_SESSION['uid']);
 
 
     $stmt->execute();
@@ -137,6 +137,7 @@ function insertFriend($db, $post)
 
 function checkFriend($db, $post)
 {
+    $result = true;
     $check = $db->prepare("SELECT 1 FROM friend WHERE uid = :uid AND uid2 = :uid2");
 
     $check->bindValue(':uid', $_SESSION['uid']);
@@ -145,9 +146,10 @@ function checkFriend($db, $post)
     $check->execute();
 
     if ($check->rowCount() === 0) {
-        return true;
+        return $result;
     } else {
-        return false;
+        $result = !$result;
+        return $result;
     }
 }
 
@@ -160,8 +162,6 @@ function saveMsg($db, $msg)
     $stmt->bindValue(":pid", $_POST['pid']);
 
     $stmt->execute();
-
-    return true;
 }
 
 function checkToDeleteUser($db, $userName, $password)
@@ -170,20 +170,23 @@ function checkToDeleteUser($db, $userName, $password)
     $stmt1->bindValue(':uid', $_SESSION['uid']);
     $stmt1->execute();
 
+    $user = [];
     if ($stmt1->rowCount() === 1) {
         $user = $stmt1->fetch(PDO::FETCH_ASSOC);
 
         if ($_SESSION['username'] == $userName) {
             if (password_verify($password, $user['password'])) {
-                return true;
+                return $user;
             } else {
-                return false;
+                $user = [];
+                return $user;
             }
         } else {
-            return false;
+            $user = [];
+            return $user;
         }
     } else {
-        return false;
+        return $user;
     }
 }
 
